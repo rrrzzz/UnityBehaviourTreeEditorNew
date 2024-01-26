@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Assets/BehaviourTree/Editor/UIBuilder/NodeViewStyle.uss?fileID=7433441132597879392&amp;guid=9d9e34dc0396ab94ab90fc5f26f12277&amp;type=3#NodeViewStyle" />
+    <Style src="NodeViewStyle.uss" />
     <ui:VisualElement name="node-state" />
     <ui:VisualElement name="node-border" style="background-image: none;">
         <ui:VisualElement name="contents">

@@ -1,28 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [System.Serializable]
-    public class RootNode : Node {
-
+    public class RootNode : Node
+    {
         [SerializeReference]
         [HideInInspector] 
         public Node child;
 
-        protected override void OnStart() {
-
+        protected override void OnStart()
+        {
         }
 
-        protected override void OnStop() {
-
+        protected override void OnStop()
+        {
         }
 
-        protected override State OnUpdate() {
-            if (child != null) {
+        protected override State OnUpdate()
+        {
+            if (child != null)
+            {
                 return child.Update();
-            } else {
+            }
+            else
+            {
                 return State.Failure;
             }
         }

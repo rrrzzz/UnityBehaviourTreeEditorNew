@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d285eb63c2cdd74180de7cfceaa96ad, type: 3}
+  m_Name: RandomWalkTree
+  m_EditorClassIdentifier: 
+  rootNode:
+    rid: 8738394189682704384
+  nodes:
+  - rid: 8738394189682704384
+  - rid: 8738394189682704386
+  - rid: 8738394189682704387
+  - rid: 8738394189682704388
+  - rid: 8738394189682704389
+  - rid: 8738394189682704390
+  treeState: 0
+  blackboard:
+    keys:
+    - rid: 8738394189682704385
+  viewPosition: {x: 317, y: 162, z: 0}
+  viewScale: {x: 0.57175326, y: 0.57175326, z: 1}
+  references:
+    version: 2
+    RefIds:
+    - rid: 8738394189682704384
+      type: {class: RootNode, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: c7be6334-0995-40ae-b3c0-8d708acb02ea
+        position: {x: 0, y: 0}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 0
+        child:
+          rid: 8738394189682704386
+    - rid: 8738394189682704385
+      type: {class: Vector3Key, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        name: Position
+        typeName: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+        value: {x: 0, y: 0, z: 0}
+    - rid: 8738394189682704386
+      type: {class: Repeat, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: 4d567a886ea1365488776dc596f9ea71
+        position: {x: 0, y: 195}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 0
+        child:
+          rid: 8738394189682704387
+        restartOnSuccess: 1
+        restartOnFailure: 0
+        maxRepeats: 0
+    - rid: 8738394189682704387
+      type: {class: Sequencer, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: afa8a823dd7861448b1b225c2a2b3968
+        position: {x: 14, y: 367.99997}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 0
+        children:
+        - rid: 8738394189682704388
+        - rid: 8738394189682704389
+        - rid: 8738394189682704390
+    - rid: 8738394189682704388
+      type: {class: RandomPosition, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: 4a1920c94ddc79243937afa8d080f163
+        position: {x: -315, y: 525}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 0
+        destination:
+          reference:
+            rid: 8738394189682704385
+          defaultValue: {x: 0, y: 0, z: 0}
+        minGoalDistance: 5
+        maxGoalDistance: 10
+    - rid: 8738394189682704389
+      type: {class: MoveToPosition, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: 3749458aeb89bb8418f0ed5f7b96b416
+        position: {x: -45, y: 525}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 1
+        canJump: 1
+        speed: 3.5
+        acceleration: 7
+        scaleSpeedWithModelSpeed: 1
+        stoppingDistance: 0.1
+        goalPosition:
+          reference:
+            rid: 8738394189682704385
+          defaultValue: {x: -14.3373, y: 0.208, z: -0.02}
+        turnAcceleration: 90
+        angularSpeed: 360
+        maxJumpHeight: 3
+        jumpDetectorSize: 3
+        jumpDetectorSizeScaled: 0
+        maxSlope: 45
+        scaleJumpDetectorWithHeight: 1
+    - rid: 8738394189682704390
+      type: {class: Wait, ns: AnythingWorld.Behaviour.Tree, asm: AnythingWorld.Behaviour.Tree.Runtime}
+      data:
+        state: 0
+        started: 0
+        guid: 0d37d18fbb8d5624b922edf40cc64812
+        position: {x: 210, y: 525}
+        blackboard:
+          keys: []
+        description: 
+        drawGizmos: 0
+        duration: 1

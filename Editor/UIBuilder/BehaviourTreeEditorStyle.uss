@@ -17,7 +17,11 @@ Label {
     margin-left: 0;
 }
 
-.unity-multi-column-view__cell {
-    justify-content: center;
-    margin-left: 5px;
+.hide-label > .unity-base-field > Label 
+{
+    display: none;
+}
+
+.unity-list-view__empty-label {
+    display: none;
 }

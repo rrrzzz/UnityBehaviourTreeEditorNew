@@ -1,57 +1,67 @@
 using UnityEngine;
 
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [System.Serializable]
-    public abstract class BlackboardKey : ISerializationCallbackReceiver{
-
+    public abstract class BlackboardKey : ISerializationCallbackReceiver
+    {
         public string name;
         public System.Type underlyingType;
         public string typeName;
 
-        public BlackboardKey(System.Type underlyingType) {
+        public BlackboardKey(System.Type underlyingType)
+        {
             this.underlyingType = underlyingType;
             typeName = this.underlyingType.FullName;
         }
 
-        public void OnBeforeSerialize() {
+        public void OnBeforeSerialize()
+        {
             typeName = underlyingType.AssemblyQualifiedName;
         }
 
-        public void OnAfterDeserialize() {
+        public void OnAfterDeserialize()
+        {
             underlyingType = System.Type.GetType(typeName);
         }
 
-        public abstract void CopyFrom(BlackboardKey key);
+        public abstract void CopyValueFrom(BlackboardKey key);
         public abstract bool Equals(BlackboardKey key);
 
-        public static BlackboardKey CreateKey(System.Type type) {
+        public static BlackboardKey CreateKey(System.Type type)
+        {
             return System.Activator.CreateInstance(type) as BlackboardKey;
         }
 
     }
 
     [System.Serializable]
-    public abstract class BlackboardKey<T> : BlackboardKey {
-
+    public abstract class BlackboardKey<T> : BlackboardKey
+    {
         public T value;
 
-        public BlackboardKey() : base(typeof(T)) {
+        public BlackboardKey() : base(typeof(T))
+        {
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"{name} : {value}";
         }
 
-        public override void CopyFrom(BlackboardKey key) {
-            if (key.underlyingType == underlyingType) {
+        public override void CopyValueFrom(BlackboardKey key)
+        {
+            if (key.underlyingType == underlyingType)
+            {
                 BlackboardKey<T> other = key as BlackboardKey<T>;
                 this.value = other.value;
             }
         }
 
-        public override bool Equals(BlackboardKey key) {
-            if (key.underlyingType == underlyingType) {
+        public override bool Equals(BlackboardKey key)
+        {
+            if (key.underlyingType == underlyingType)
+            {
                 BlackboardKey<T> other = key as BlackboardKey<T>;
                 return this.value.Equals(other.value);
             }

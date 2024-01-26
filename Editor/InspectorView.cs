@@ -1,28 +1,28 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
-namespace TheKiwiCoder {
-    public class InspectorView : VisualElement {
+namespace AnythingWorld.Behaviour.Tree
+{
+    public class InspectorView : VisualElement
+    {
         public new class UxmlFactory : UxmlFactory<InspectorView, VisualElement.UxmlTraits> { }
 
-        public InspectorView() {
-
+        public InspectorView()
+        {
         }
 
-        internal void UpdateSelection(SerializedBehaviourTree serializer, NodeView nodeView) {
+        internal void UpdateSelection(SerializedBehaviourTree serializer, NodeView nodeView)
+        {
             Clear();
 
-            if (nodeView == null) {
+            if (nodeView == null)
+            {
                 return;
             }
 
             var nodeProperty = serializer.FindNode(serializer.Nodes, nodeView.node);
-            if (nodeProperty == null) {
+            if (nodeProperty == null)
+            {
                 return;
             }
 
@@ -31,7 +31,11 @@ namespace TheKiwiCoder {
 
             // Property field
             PropertyField field = new PropertyField();
+#if UNITY_2021_3_OR_NEWER
             field.label = nodeProperty.managedReferenceValue.GetType().ToString();
+#else
+            field.label = EditorUtility.GetTargetObjectOfProperty(nodeProperty).GetType().ToString();            
+#endif
             field.BindProperty(nodeProperty);
 
             Add(field);

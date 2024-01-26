@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [System.Serializable]
-    public abstract class ActionNode : Node {
-
+    public abstract class ActionNode : Node
+    {
     }
 }

@@ -1,23 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TheKiwiCoder;
-
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree 
+{
     [System.Serializable]
     public class SetProperty : ActionNode
     {
         public BlackboardKeyValuePair pair;
 
-        protected override void OnStart() {
+        protected override void OnStart()
+        {
         }
 
-        protected override void OnStop() {
+        protected override void OnStop()
+        {
         }
 
-        protected override State OnUpdate() {
-            
+        protected override State OnUpdate()
+        {
             pair.WriteValue();
             
             return State.Success;

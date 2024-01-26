@@ -1,23 +1,21 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
-using System.Runtime.Remoting.Messaging;
+using UnityEngine;
+using UnityEngine.UIElements;
 
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [CustomPropertyDrawer(typeof(NodeProperty<>))]
-    public class GenericNodePropertyPropertyDrawer : PropertyDrawer {
-
-        public override VisualElement CreatePropertyGUI(SerializedProperty property) {
-            
+    public class GenericNodePropertyPropertyDrawer : PropertyDrawer
+    {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
             BehaviourTree tree = property.serializedObject.targetObject as BehaviourTree;
 
             var genericTypes = fieldInfo.FieldType.GenericTypeArguments;
             var propertyType = genericTypes[0];
-
+            
             SerializedProperty reference = property.FindPropertyRelative("reference");
 
             Label label = new Label();
@@ -26,48 +24,106 @@ namespace TheKiwiCoder {
             label.AddToClassList("unity-property-field");
             label.text = property.displayName;
 
-            PropertyField defaultValueField = new PropertyField();
-            defaultValueField.label = "";
+            var defaultValueField = PropertyDrawerUtils.GetFieldByType(propertyType, nameof(NodeProperty<int>.defaultValue));
             defaultValueField.style.flexGrow = 1.0f;
-            defaultValueField.bindingPath = nameof(NodeProperty<int>.defaultValue);
-
+            defaultValueField.AddToClassList("hide-label");
+            
             PopupField<BlackboardKey> dropdown = new PopupField<BlackboardKey>();
             dropdown.label = "";
             dropdown.formatListItemCallback = FormatItem;
             dropdown.formatSelectedValueCallback = FormatSelectedItem;
-            dropdown.value = reference.managedReferenceValue as BlackboardKey;
+
+#if UNITY_2021_3_OR_NEWER
+            var referenceValue = reference.managedReferenceValue as BlackboardKey;
+#else
+            var referenceValue = EditorUtility.GetTargetObjectOfProperty(reference) as BlackboardKey;
+#endif
+            if (referenceValue != null)
+            {
+#if !UNITY_2021_3_OR_NEWER && UNITY_2021
+                var prop = dropdown.GetType().GetField("m_Choices", System.Reflection.BindingFlags.NonPublic
+                                                                    | System.Reflection.BindingFlags.Instance);
+                var choices = prop.GetValue(dropdown) as List<BlackboardKey>;
+            
+                choices.Add(referenceValue);
+                prop.SetValue(dropdown, choices);
+#endif
+                dropdown.value = referenceValue;
+            }
+            
             dropdown.tooltip = "Bind value to a BlackboardKey";
             dropdown.style.flexGrow = 1.0f;
-            dropdown.RegisterCallback<MouseEnterEvent>((evt) => {
+            dropdown.RegisterCallback<MouseEnterEvent>((evt) =>
+            {
+#if !UNITY_2021_3_OR_NEWER && UNITY_2021
+                var prop = dropdown.GetType().GetField("m_Choices", System.Reflection.BindingFlags.NonPublic
+                                                                    | System.Reflection.BindingFlags.Instance);
+                var choices = prop.GetValue(dropdown) as List<BlackboardKey>;
+                choices.Clear();
+
+                foreach (var key in tree.blackboard.keys)
+                {
+                    if (propertyType.IsAssignableFrom(key.underlyingType))
+                    {
+                        choices.Add(key);
+                    }
+                }
+                choices.Add(null);
+
+                choices.Sort((left, right) =>
+                {
+                    if (left == null)
+                    {
+                        return -1;
+                    }
+
+                    if (right == null)
+                    {
+                        return 1;
+                    }
+                    return left.name.CompareTo(right.name);
+                });
+                prop.SetValue(dropdown, choices);
+#else
                 dropdown.choices.Clear();
-                foreach (var key in tree.blackboard.keys) {
-                    if (propertyType.IsAssignableFrom(key.underlyingType)) {
+                foreach (var key in tree.blackboard.keys)
+                {
+                    if (propertyType.IsAssignableFrom(key.underlyingType))
+                    {
                         dropdown.choices.Add(key);
                     }
                 }
                 dropdown.choices.Add(null);
 
-                dropdown.choices.Sort((left, right) => {
-                    if (left == null) {
+                dropdown.choices.Sort((left, right) =>
+                {
+                    if (left == null)
+                    {
                         return -1;
                     }
 
-                    if (right == null) {
+                    if (right == null)
+                    {
                         return 1;
                     }
                     return left.name.CompareTo(right.name);
                 });
+#endif 
             });
 
-            dropdown.RegisterCallback<ChangeEvent<BlackboardKey>>((evt) => {
+            dropdown.RegisterCallback<ChangeEvent<BlackboardKey>>((evt) =>
+            {
                 BlackboardKey newKey = evt.newValue;
                 reference.managedReferenceValue = newKey;
                 BehaviourTreeEditorWindow.Instance.serializer.ApplyChanges();
 
-                if (evt.newValue == null) {
+                if (evt.newValue == null)
+                {
                     defaultValueField.style.display = DisplayStyle.Flex;
                     dropdown.style.flexGrow = 0.0f;
-                } else {
+                }
+                else
+                {
                     defaultValueField.style.display = DisplayStyle.None;
                     dropdown.style.flexGrow = 1.0f;
                 }
@@ -87,28 +143,36 @@ namespace TheKiwiCoder {
             return container;
         }
 
-        private string FormatItem(BlackboardKey item) {
-            if (item == null) {
+        private string FormatItem(BlackboardKey item)
+        {
+            if (item == null)
+            {
                 return "[Inline]";
-            } else {
+            }
+            else
+            {
                 return item.name;
             }
         }
 
-        private string FormatSelectedItem(BlackboardKey item) {
-            if (item == null) {
+        private string FormatSelectedItem(BlackboardKey item)
+        {
+            if (item == null)
+            {
                 return "";
-            } else {
+            }
+            else
+            {
                 return item.name;
             }
         }
     }
 
     [CustomPropertyDrawer(typeof(NodeProperty))]
-    public class NodePropertyPropertyDrawer : PropertyDrawer {
-
-        public override VisualElement CreatePropertyGUI(SerializedProperty property) {
-
+    public class NodePropertyPropertyDrawer : PropertyDrawer
+    {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
             BehaviourTree tree = property.serializedObject.targetObject as BehaviourTree;
 
             SerializedProperty reference = property.FindPropertyRelative("reference");
@@ -117,19 +181,43 @@ namespace TheKiwiCoder {
             dropdown.label = property.displayName;
             dropdown.formatListItemCallback = FormatItem;
             dropdown.formatSelectedValueCallback = FormatItem;
+#if UNITY_2021_3_OR_NEWER
             dropdown.value = reference.managedReferenceValue as BlackboardKey;
-
-            dropdown.RegisterCallback<MouseEnterEvent>((evt) => {
-                dropdown.choices.Clear();
-                foreach (var key in tree.blackboard.keys) {
-                    dropdown.choices.Add(key);
+#else
+            dropdown.value = EditorUtility.GetTargetObjectOfProperty(reference) as BlackboardKey;
+#endif
+            
+            dropdown.RegisterCallback<MouseEnterEvent>((evt) =>
+            {
+#if !UNITY_2021_3_OR_NEWER && UNITY_2021
+                var prop = dropdown.GetType().GetField("m_Choices", System.Reflection.BindingFlags.NonPublic
+                                                                    | System.Reflection.BindingFlags.Instance);
+                var choices = prop.GetValue(dropdown) as List<BlackboardKey>;
+                choices.Clear();
+                foreach (var key in tree.blackboard.keys)
+                {
+                    choices.Add(key);
                 }
-                dropdown.choices.Sort((left, right) => {
+                choices.Sort((left, right) =>
+                {
                     return left.name.CompareTo(right.name);
                 });
+                prop.SetValue(dropdown, choices);
+#else
+                dropdown.choices.Clear();
+                foreach (var key in tree.blackboard.keys)
+                {
+                    dropdown.choices.Add(key);
+                }
+                dropdown.choices.Sort((left, right) =>
+                {
+                    return left.name.CompareTo(right.name);
+                });
+#endif
             });
 
-            dropdown.RegisterCallback<ChangeEvent<BlackboardKey>>((evt) => {
+            dropdown.RegisterCallback<ChangeEvent<BlackboardKey>>((evt) =>
+            {
                 BlackboardKey newKey = evt.newValue;
                 reference.managedReferenceValue = newKey;
                 BehaviourTreeEditorWindow.Instance.serializer.ApplyChanges();
@@ -137,10 +225,14 @@ namespace TheKiwiCoder {
             return dropdown;
         }
 
-        private string FormatItem(BlackboardKey item) {
-            if (item == null) {
+        private string FormatItem(BlackboardKey item)
+        {
+            if (item == null)
+            {
                 return "(null)";
-            } else {
+            }
+            else
+            {
                 return item.name;
             }
         }

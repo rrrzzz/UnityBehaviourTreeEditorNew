@@ -1,141 +1,124 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
-using System;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
-namespace TheKiwiCoder {
-    public class OverlayView : VisualElement {
-        public new class UxmlFactory : UxmlFactory<OverlayView, UxmlTraits> { }
+namespace AnythingWorld.Behaviour.Tree
+{
+    public class OverlayView : VisualElement
+    {
+        public new class UxmlFactory : UxmlFactory<OverlayView, UxmlTraits>{}
 
-        public Action<BehaviourTree> OnTreeSelected;
+        public System.Action<BehaviourTree> OnTreeSelected;
+        public bool isShown;
 
-        Button createButton;
-        VisualElement listViewContainer;
-        MultiColumnListView projectListView;
+        private const string DefaultTreeName = "New Behaviour Tree";
+        private PopupField<string> assetSelector;
+        private TextField treeNameField;
+        private TextField locationPathField;
+        
+        public void Show(bool isOnlyCreateMenuShown)
+        {
+            var settings = new SerializedObject(BehaviourTreeEditorWindow.Instance.settings);
 
-        string NameColumn = "Name";
-        string PathColumn = "Path";
-        List<string> assetPaths;
-
-        Column CreateColumn(string name) {
-            var column = new Column();
-            column.name = name;
-            column.title = name;
-            column.width = 100.0f;
-            column.stretchable = true;
-            return column;
-        }
-
-        MultiColumnListView CreateListView() {
-
-            var listView = new MultiColumnListView();
-            listView.showBorder = true;
-            listView.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
-            listView.fixedItemHeight = 30.0f;
-            listView.showBoundCollectionSize = false;
-            listView.showAddRemoveFooter = false;
-            listView.reorderable = false;
-            listView.itemsSource = assetPaths;
-
-            listView.columns.Add(CreateColumn(NameColumn));
-            listView.columns.Add(CreateColumn(PathColumn));
-
-            listView.columns[NameColumn].makeCell = () => new Label();
-            listView.columns[PathColumn].makeCell = () => new Label();
-
-            listView.columns[NameColumn].bindCell = BindName;
-            listView.columns[PathColumn].bindCell = BindPath;
-
-            return listView;
-        }
-
-        private void BindName(VisualElement element, int index) {
-            Label label = element as Label;
-            label.style.unityTextAlign = TextAnchor.MiddleLeft;
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(assetPaths[index]);
-            label.text = fileName;
-        }
-
-        private void BindPath(VisualElement element, int index) {
-            Label label = element as Label;
-            label.style.unityTextAlign = TextAnchor.MiddleLeft;
-            label.text = assetPaths[index];
-        }
-
-        public void Show() {
             // Hidden in UIBuilder while editing..
+            isShown = true;
             style.visibility = Visibility.Visible;
 
             // Configure fields
-            createButton = this.Q<Button>("CreateButton");
-            listViewContainer = this.Q<VisualElement>("ListViewContainer");
+            treeNameField = this.Q<TextField>("TreeName");
+            treeNameField.value = DefaultTreeName;
+            locationPathField = this.Q<TextField>("LocationPath");
+            var openButton = this.Q<Button>("OpenButton");
+            var createButton = this.Q<Button>("CreateButton");
+            var popupContainer = this.Q<VisualElement>("OpenAsset");
+            var titleLabel = this.Q<Label>("title");
+            var createLabel = this.Q<Label>("createLabel");
+            
+            if (isOnlyCreateMenuShown)
+            {
+                titleLabel.text = "Create Behaviour Tree";
+                createLabel.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
+                popupContainer.parent.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
+            }
+            
+            locationPathField.BindProperty(settings.FindProperty("newTreePath"));
+            
+            if (!isOnlyCreateMenuShown)
+            {
+                assetSelector = new PopupField<string>();
+                assetSelector.label = "Asset";
+                assetSelector.style.flexGrow = 1;
+                assetSelector.style.flexShrink = 1;
+                
+                popupContainer.parent.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+                createLabel.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+                
+                // Configure asset selection dropdown menu
+                var behaviourTrees = BehaviourTreeEditorUtility.GetAssetPaths<BehaviourTree>();
+#if !UNITY_2021_3_OR_NEWER && UNITY_2021
+                var prop = assetSelector.GetType().GetField("m_Choices", System.Reflection.BindingFlags.NonPublic
+                                                                         | System.Reflection.BindingFlags.Instance);
+                var choices = prop.GetValue(assetSelector) as List<string>;
+               
+                behaviourTrees.ForEach(treePath => choices.Add(ToMenuFormat(treePath)));
+                prop.SetValue(assetSelector, choices);
+#else
+                behaviourTrees.ForEach(treePath => assetSelector.choices.Add(ToMenuFormat(treePath)));
+#endif
+                popupContainer.Clear();
+                popupContainer.Add(assetSelector);
 
-            // Find all behaviour tree assets
-            assetPaths = EditorUtility.GetAssetPaths<BehaviourTree>();
-            assetPaths.Sort();
+                // // Configure open asset button
+                openButton.clicked -= OnOpenAsset;
+                openButton.clicked += OnOpenAsset;
+            }
 
             // Configure create asset button
             createButton.clicked -= OnCreateAsset;
             createButton.clicked += OnCreateAsset;
-
-            projectListView = CreateListView();
-            listViewContainer.Clear();
-            listViewContainer.Add(projectListView);
-            projectListView.selectionChanged += OnSelectionChanged;
         }
 
-        private void OnSelectionChanged(IEnumerable<object> obj) {
-            OnOpenAsset();
-        }
-
-        public void Hide() {
+        public void Hide()
+        {
             style.visibility = Visibility.Hidden;
+            isShown = false;
         }
 
-        public string ToMenuFormat(string one) {
+        public string ToMenuFormat(string one)
+        {
             // Using the slash creates submenus...
             return one.Replace("/", "|");
         }
 
-        public string ToAssetFormat(string one) {
+        public string ToAssetFormat(string one)
+        {
             // Using the slash creates submenus...
             return one.Replace("|", "/");
         }
 
-        void OnOpenAsset() {
-            var path = assetPaths[projectListView.selectedIndex];
-
+        void OnOpenAsset()
+        {
+            string path = ToAssetFormat(assetSelector.text);
             BehaviourTree tree = AssetDatabase.LoadAssetAtPath<BehaviourTree>(path);
-            if (tree) {
+            if (tree)
+            {
                 TreeSelected(tree);
                 style.visibility = Visibility.Hidden;
             }
         }
 
-        void OnCreateAsset() {
-            var settings = BehaviourTreeEditorWindow.Instance.settings;
-
-            string savePath = UnityEditor.EditorUtility.SaveFilePanel("Create New", settings.newTreePath, "New Behavior Tree", "asset");
-            if (string.IsNullOrEmpty(savePath)) {
-                return;
-            }
-
-            string name = System.IO.Path.GetFileNameWithoutExtension(savePath);
-            string folder = System.IO.Path.GetDirectoryName(savePath);
-            folder = folder.Substring(folder.IndexOf("Assets"));
-
-            //System.IO.Directory.CreateDirectory(folder);
-            BehaviourTree tree = EditorUtility.CreateNewTree(name, folder);
-
-
-            if (tree) {
+        void OnCreateAsset()
+        {
+            BehaviourTree tree = BehaviourTreeEditorUtility.CreateNewTree(treeNameField.text, locationPathField.text);
+            if (tree)
+            {
                 TreeSelected(tree);
                 style.visibility = Visibility.Hidden;
             }
         }
 
-        void TreeSelected(BehaviourTree tree) {
+        void TreeSelected(BehaviourTree tree)
+        {
             OnTreeSelected.Invoke(tree);
         }
     }

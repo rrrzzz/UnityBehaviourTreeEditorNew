@@ -1,0 +1,17 @@
+{
+    "name": "AnythingWorld.Behaviour.Tree.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e88284e16fd647647a7b310ff1a88278",
+        "GUID:a7bd4d7ed0af7e7488cea3d1d436d49c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

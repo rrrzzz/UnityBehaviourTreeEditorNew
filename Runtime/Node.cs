@@ -1,12 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [System.Serializable]
-    public abstract class Node {
-        public enum State {
+    public abstract class Node
+    {
+        public enum State
+        {
             Running,
             Failure,
             Success
@@ -20,21 +20,22 @@ namespace TheKiwiCoder {
         [HideInInspector] public Blackboard blackboard;
         [TextArea] public string description;
         [Tooltip("When enabled, the nodes OnDrawGizmos will be invoked")] public bool drawGizmos = false;
+        protected bool canRun = true;
+        
+        public virtual void OnInit() {}
 
-        public virtual void OnInit() {
-            // Nothing to do here
-        }
-
-        public State Update() {
-
-            if (!started) {
+        public State Update()
+        {
+            if (!started)
+            {
                 OnStart();
                 started = true;
             }
 
             state = OnUpdate();
 
-            if (state != State.Running) {
+            if (state != State.Running)
+            {
                 OnStop();
                 started = false;
             }
@@ -42,8 +43,10 @@ namespace TheKiwiCoder {
             return state;
         }
 
-        public void Abort() {
-            BehaviourTree.Traverse(this, (node) => {
+        public void Abort()
+        {
+            BehaviourTree.Traverse(this, (node) =>
+            {
                 node.started = false;
                 node.state = State.Running;
                 node.OnStop();
@@ -56,7 +59,8 @@ namespace TheKiwiCoder {
         protected abstract void OnStop();
         protected abstract State OnUpdate();
 
-        protected virtual void Log(string message) {
+        protected virtual void Log(string message)
+        {
             Debug.Log($"[{GetType()}]{message}");
         }
     }

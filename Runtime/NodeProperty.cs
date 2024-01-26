@@ -1,43 +1,76 @@
 using UnityEngine;
 
-namespace TheKiwiCoder {
-
+namespace AnythingWorld.Behaviour.Tree
+{
     [System.Serializable]
-    public class NodeProperty {
+    public class NodeProperty
+    {
         [SerializeReference]
         public BlackboardKey reference; 
     }
 
     [System.Serializable]
-    public class NodeProperty<T> : NodeProperty {
+    public class NodeProperty<T> : NodeProperty
+    {
+        public T defaultValue;
+        private BlackboardKey<T> _typedKey;
 
-        public T defaultValue = default(T);
-        private BlackboardKey<T> _typedKey = null;
+        public NodeProperty(){}
 
-        private BlackboardKey<T> typedKey {
-            get {
-                if (_typedKey == null && reference != null) {
+        public NodeProperty(T defaultValue)
+        {
+            this.defaultValue = defaultValue;
+        }
+
+        public static implicit operator T(NodeProperty<T> instance) => instance.Value;
+        
+        public T Value
+        {
+            set
+            {
+                if (typedKey != null)
+                {
+                    typedKey.value = value;
+                }
+                else
+                {
+                    defaultValue = value;
+                }
+            }
+            get
+            {
+                if (typedKey != null)
+                {
+                    return typedKey.value;
+                }
+                else
+                {
+                    return defaultValue;
+                }
+            }
+        }
+        
+        private BlackboardKey<T> typedKey
+        {
+            get
+            {
+                if (_typedKey == null && reference != null)
+                {
                     _typedKey = reference as BlackboardKey<T>;
                 }
                 return _typedKey;
             }
         }
 
-        public T Value {
-            set {
-                if (typedKey != null) {
-                    typedKey.value = value;
-                } else {
-                    defaultValue = value;
-                }
-            }
-            get {
-                if (typedKey != null) {
-                    return typedKey.value;
-                } else {
-                    return defaultValue;
-                }
-            }
+        public NodeProperty<T> CreateCopy()
+        {
+            var copy = new NodeProperty<T>
+            {
+                defaultValue = defaultValue,
+                reference = reference
+            };
+
+            return copy;
         }
     }
 }
